@@ -1,7 +1,7 @@
 {
   "laserColor": "#00e676",
   "trailDuration": 4,
-  "strokeWidth": 5.5,
+  "strokeWidth": 5,
   "strokeHardness": 1,
   "persistTrails": false,
   "rememberDrawings": false,

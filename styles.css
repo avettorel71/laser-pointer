@@ -22,6 +22,8 @@
     pointer-events: none;
     z-index: 9999;
     transform: translate(-50%, -50%);
+    background-color: var(--laser-pointer-color, #ff1a1a);
+    box-shadow: 0 0 8px 3px var(--laser-pointer-color, #ff1a1a), 0 0 16px 6px var(--laser-pointer-color, #ff1a1a), 0 0 32px 10px var(--laser-pointer-color, #ff1a1a);
 }
 
 .laser-pointer.eraser-mode {
@@ -270,4 +272,36 @@
     user-select: none;
     font-weight: 500;
     white-space: nowrap;
+}
+
+/* Laser pointer hidden (usato durante drag toolbar) */
+.laser-pointer-hidden {
+    display: none !important;
+}
+
+/* Toolbar dragging state */
+.laser-toolbar-dragging {
+    bottom: auto !important;
+    transform: none !important;
+}
+
+/* SVG interactive (eraser mode) */
+.laser-svg-interactive {
+    pointer-events: auto !important;
+}
+
+/* Settings heading styles */
+.laser-settings-heading {
+    font-size: var(--font-ui-large);
+    font-weight: var(--font-bold);
+    margin-bottom: 12px;
+    color: var(--text-normal);
+}
+
+.laser-settings-subheading {
+    font-size: var(--font-ui-medium);
+    font-weight: var(--font-bold);
+    margin-top: 16px;
+    margin-bottom: 4px;
+    color: var(--text-normal);
 }
