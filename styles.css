@@ -1,0 +1,273 @@
+.laser-cursor-hidden,
+.laser-cursor-hidden * {
+    cursor: none !important;
+}
+
+.laser-toolbar,
+.laser-toolbar * {
+    cursor: default !important;
+}
+
+.laser-color-btn,
+.laser-width-slider,
+.laser-action-btn {
+    cursor: pointer !important;
+}
+
+.laser-pointer {
+    position: fixed;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+}
+
+.laser-pointer.eraser-mode {
+    width: 22px;
+    height: 22px;
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 2px #000000, 0 0 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+.laser-svg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+}
+
+.laser-path {
+    stroke-width: 3px;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 1;
+    transition: opacity 1s ease-out, stroke-width 1s ease-out;
+}
+
+.laser-path.fading {
+    opacity: 0;
+    stroke-width: 0;
+}
+
+.laser-toolbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    min-height: 36px;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.laser-toolbar-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-normal);
+    cursor: grab;
+    padding: 2px 4px;
+    border-right: 1px solid var(--background-modifier-border);
+    letter-spacing: 0.3px;
+    line-height: 1;
+}
+
+.laser-toolbar-header:active {
+    cursor: grabbing;
+}
+
+.laser-toolbar-colors {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.laser-color-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    flex-shrink: 0;
+}
+
+.laser-color-btn:hover {
+    transform: scale(1.25);
+}
+
+.laser-color-btn.active {
+    border-color: var(--text-normal);
+    transform: scale(1.15);
+    box-shadow: 0 0 0 1.5px var(--background-primary), 0 0 0 3px var(--text-normal);
+}
+
+.laser-color-custom {
+    background: conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.laser-color-picker-hidden {
+    position: absolute;
+    visibility: hidden;
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: 0;
+}
+
+.laser-toolbar-width {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    border-left: 1px solid var(--background-modifier-border);
+    padding-left: 8px;
+}
+
+.laser-toolbar-width label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+    width: 60px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+.laser-width-slider {
+    width: 80px;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.laser-toolbar-hardness {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    border-left: 1px solid var(--background-modifier-border);
+    padding-left: 8px;
+}
+
+.laser-toolbar-hardness label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+    width: 60px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+.laser-toolbar-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    border-left: 1px solid var(--background-modifier-border);
+    padding-left: 8px;
+}
+
+.laser-action-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    flex-shrink: 0;
+}
+
+.laser-action-btn:hover {
+    background: var(--background-modifier-hover);
+}
+
+.laser-action-btn.active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+.laser-toolbar-persist {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-left: 1px solid var(--background-modifier-border);
+    padding-left: 8px;
+}
+
+.laser-toolbar-persist input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    margin: 0;
+    accent-color: var(--interactive-accent);
+    flex-shrink: 0;
+}
+
+.laser-toolbar-persist label {
+    font-size: 10px;
+    color: var(--text-normal);
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.laser-toolbar-remember {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-left: 1px solid var(--background-modifier-border);
+    padding-left: 8px;
+}
+
+.laser-toolbar-remember input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    margin: 0;
+    accent-color: var(--interactive-accent);
+    flex-shrink: 0;
+}
+
+.laser-toolbar-remember label {
+    font-size: 10px;
+    color: var(--text-normal);
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    white-space: nowrap;
+}
