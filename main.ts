@@ -626,10 +626,6 @@ class LaserPointerSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         new Setting(containerEl)
-            .setName('Laser Pointer Settings')
-            .setHeading();
-
-        new Setting(containerEl)
             .setName('Laser color')
             .setDesc('Choose the color of the pointer and the drawn trails.')
             .addColorPicker(color => color
