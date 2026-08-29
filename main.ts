@@ -1,4 +1,4 @@
-import { Plugin, Notice, PluginSettingTab, Setting, MarkdownView, WorkspaceLeaf } from 'obsidian';
+import { App, Plugin, Notice, PluginSettingTab, Setting, MarkdownView, WorkspaceLeaf } from 'obsidian';
 
 interface LaserPointerSettings {
     laserColor: string;
@@ -26,6 +26,15 @@ interface SavedPath {
     strokeOpacity: string;
     filter: string;
 }
+
+interface PersistedData extends Partial<LaserPointerSettings> {
+    _savedPaths?: SavedPath[];
+}
+
+// Keys of LaserPointerSettings whose value type is boolean.
+type BooleanSettingKey = {
+    [K in keyof LaserPointerSettings]: LaserPointerSettings[K] extends boolean ? K : never;
+}[keyof LaserPointerSettings];
 
 const DEFAULT_SETTINGS: LaserPointerSettings = {
     laserColor: '#ff1a1a',
@@ -96,8 +105,8 @@ export default class LaserPointerPlugin extends Plugin {
         });
 
         this.addCommand({
-            id: 'toggle-laser-pointer',
-            name: 'Toggle Laser Pointer',
+            id: 'toggle',
+            name: 'Toggle',
             callback: () => {
                 this.toggleLaser();
             }
@@ -139,9 +148,9 @@ export default class LaserPointerPlugin extends Plugin {
     }
 
     async loadSettings() {
-        const data = await this.loadData();
+        const data = (await this.loadData()) as PersistedData | null;
         this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
-        this.savedPaths = (data && data._savedPaths) ? data._savedPaths : [];
+        this.savedPaths = data?._savedPaths ?? [];
     }
 
     async saveSettings() {
@@ -171,7 +180,7 @@ export default class LaserPointerPlugin extends Plugin {
                 if (state.state?.mode !== 'preview') {
                     this.originalMode = (state.state as { mode?: string } | undefined)?.mode || 'source';
                     this.targetLeaf = leaf;
-                    leaf.setViewState({
+                    void leaf.setViewState({
                         type: 'markdown',
                         state: { ...state.state, mode: 'preview' }
                     });
@@ -179,29 +188,22 @@ export default class LaserPointerPlugin extends Plugin {
             }
         }
 
-        this.laserPointer = document.createElement('div');
-        this.laserPointer.addClass('laser-pointer');
+        this.laserPointer = document.body.createDiv('laser-pointer');
         this.applyLaserColor(this.settings.laserColor);
         this.laserPointer.style.left = `${this.lastMouseX}px`;
         this.laserPointer.style.top = `${this.lastMouseY}px`;
-        document.body.appendChild(this.laserPointer);
 
-        this.svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        this.svgContainer.addClass('laser-svg-container');
-        document.body.appendChild(this.svgContainer);
-
+        this.svgContainer = document.body.createSvg('svg', { cls: 'laser-svg-container' });
         this.svgContainer.addEventListener('click', this.boundOnSvgClick);
 
         if (this.settings.rememberDrawings && this.savedPaths.length > 0) {
             this.savedPaths.forEach((saved) => {
-                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.addClass('laser-path');
+                const path = this.svgContainer!.createSvg('path', { cls: 'laser-path' });
                 path.setAttribute('d', saved.d);
                 path.style.stroke = saved.stroke;
                 path.style.strokeWidth = saved.strokeWidth;
                 path.style.strokeOpacity = saved.strokeOpacity;
                 path.style.filter = saved.filter;
-                this.svgContainer!.appendChild(path);
             });
         }
 
@@ -217,11 +219,11 @@ export default class LaserPointerPlugin extends Plugin {
         if (this.targetLeaf && this.originalMode) {
             try {
                 const state = this.targetLeaf.getViewState();
-                this.targetLeaf.setViewState({
+                void this.targetLeaf.setViewState({
                     type: 'markdown',
                     state: { ...state.state, mode: this.originalMode }
                 });
-            } catch (e) {
+            } catch {
                 // ignore
             }
             this.originalMode = null;
@@ -240,10 +242,10 @@ export default class LaserPointerPlugin extends Plugin {
                     filter: p.style.filter,
                 });
             });
-            this.saveData({ ...this.settings, _savedPaths: this.savedPaths });
+            void this.saveData({ ...this.settings, _savedPaths: this.savedPaths });
         } else {
             this.savedPaths = [];
-            this.saveData({ ...this.settings, _savedPaths: [] });
+            void this.saveData({ ...this.settings, _savedPaths: [] });
         }
 
         if (this.laserPointer) {
@@ -267,13 +269,10 @@ export default class LaserPointerPlugin extends Plugin {
     }
 
     createToolbar() {
-        this.toolbar = document.createElement('div');
-        this.toolbar.addClass('laser-toolbar');
+        this.toolbar = document.body.createDiv('laser-toolbar');
 
         if (this.settings.showToolbarHeader) {
-            const header = document.createElement('div');
-            header.addClass('laser-toolbar-header');
-            header.setText('Laser Pointer');
+            const header = this.toolbar.createDiv({ cls: 'laser-toolbar-header', text: 'Laser Pointer' });
             header.addEventListener('mousedown', (evt) => {
                 if (!this.toolbar) return;
                 this.isDraggingToolbar = true;
@@ -289,19 +288,17 @@ export default class LaserPointerPlugin extends Plugin {
                 evt.preventDefault();
                 evt.stopPropagation();
             });
-            this.toolbar.appendChild(header);
         }
 
         if (this.settings.showColorPresets || this.settings.showCustomColor) {
-            const colorRow = document.createElement('div');
-            colorRow.addClass('laser-toolbar-colors');
+            const colorRow = this.toolbar.createDiv('laser-toolbar-colors');
 
             if (this.settings.showColorPresets) {
                 PRESET_COLORS.forEach(preset => {
-                    const btn = document.createElement('button');
-                    btn.addClass('laser-color-btn');
-                    btn.setAttribute('data-color', preset.color);
-                    btn.setAttribute('aria-label', preset.label);
+                    const btn = colorRow.createEl('button', {
+                        cls: 'laser-color-btn',
+                        attr: { 'data-color': preset.color, 'aria-label': preset.label }
+                    });
                     btn.style.backgroundColor = preset.color;
                     if (this.settings.laserColor === preset.color) btn.addClass('active');
 
@@ -311,20 +308,20 @@ export default class LaserPointerPlugin extends Plugin {
                         colorRow.querySelectorAll('.laser-color-btn').forEach(b => b.removeClass('active'));
                         btn.addClass('active');
                     });
-                    colorRow.appendChild(btn);
                 });
             }
 
             if (this.settings.showCustomColor) {
-                const customBtn = document.createElement('button');
-                customBtn.addClass('laser-color-btn');
-                customBtn.addClass('laser-color-custom');
-                customBtn.setAttribute('aria-label', 'Custom color');
-                customBtn.setText('🎨');
+                const customBtn = colorRow.createEl('button', {
+                    cls: 'laser-color-btn laser-color-custom',
+                    attr: { 'aria-label': 'Custom color' },
+                    text: '🎨'
+                });
 
-                const colorInput = document.createElement('input');
-                colorInput.type = 'color';
-                colorInput.addClass('laser-color-picker-hidden');
+                const colorInput = colorRow.createEl('input', {
+                    type: 'color',
+                    cls: 'laser-color-picker-hidden'
+                });
                 colorInput.value = this.settings.laserColor;
 
                 customBtn.addEventListener('click', (e) => {
@@ -337,152 +334,124 @@ export default class LaserPointerPlugin extends Plugin {
                     this.setLaserColor(color);
                     colorRow.querySelectorAll('.laser-color-btn').forEach(b => b.removeClass('active'));
                 });
-
-                colorRow.appendChild(customBtn);
-                colorRow.appendChild(colorInput);
             }
-
-            this.toolbar.appendChild(colorRow);
         }
 
         if (this.settings.showWidthSlider) {
-            const widthRow = document.createElement('div');
-            widthRow.addClass('laser-toolbar-width');
+            const widthRow = this.toolbar.createDiv('laser-toolbar-width');
 
-            const widthLabel = document.createElement('label');
-            widthLabel.setText(`Width: ${this.settings.strokeWidth}px`);
-            widthRow.appendChild(widthLabel);
+            const widthLabel = widthRow.createEl('label', { text: `Width: ${this.settings.strokeWidth}px` });
 
-            const slider = document.createElement('input');
-            slider.type = 'range';
-            slider.addClass('laser-width-slider');
-            slider.min = '0.5';
-            slider.max = '20';
-            slider.step = '0.5';
+            const slider = widthRow.createEl('input', {
+                type: 'range',
+                cls: 'laser-width-slider',
+                attr: { min: '0.5', max: '20', step: '0.5' }
+            });
             slider.value = String(this.settings.strokeWidth);
 
             slider.addEventListener('input', (e) => {
                 const val = parseFloat((e.target as HTMLInputElement).value);
                 this.settings.strokeWidth = val;
-                this.saveSettings();
+                void this.saveSettings();
                 widthLabel.setText(`Width: ${val}px`);
             });
-
-            widthRow.appendChild(slider);
-            this.toolbar.appendChild(widthRow);
         }
 
         if (this.settings.showHardnessSlider) {
-            const hardnessRow = document.createElement('div');
-            hardnessRow.addClass('laser-toolbar-hardness');
+            const hardnessRow = this.toolbar.createDiv('laser-toolbar-hardness');
 
-            const hardnessLabel = document.createElement('label');
-            hardnessLabel.setText(`Hard: ${Math.round(this.settings.strokeHardness * 100)}%`);
-            hardnessRow.appendChild(hardnessLabel);
+            const hardnessLabel = hardnessRow.createEl('label', {
+                text: `Hard: ${Math.round(this.settings.strokeHardness * 100)}%`
+            });
 
-            const hardnessSlider = document.createElement('input');
-            hardnessSlider.type = 'range';
-            hardnessSlider.addClass('laser-width-slider');
-            hardnessSlider.min = '0.1';
-            hardnessSlider.max = '1';
-            hardnessSlider.step = '0.1';
+            const hardnessSlider = hardnessRow.createEl('input', {
+                type: 'range',
+                cls: 'laser-width-slider',
+                attr: { min: '0.1', max: '1', step: '0.1' }
+            });
             hardnessSlider.value = String(this.settings.strokeHardness);
 
             hardnessSlider.addEventListener('input', (e) => {
                 const val = parseFloat((e.target as HTMLInputElement).value);
                 this.settings.strokeHardness = val;
-                this.saveSettings();
+                void this.saveSettings();
                 hardnessLabel.setText(`Hard: ${Math.round(val * 100)}%`);
             });
-
-            hardnessRow.appendChild(hardnessSlider);
-            this.toolbar.appendChild(hardnessRow);
         }
 
         if (this.settings.showEraserButton || this.settings.showClearButton) {
-            const actionsRow = document.createElement('div');
-            actionsRow.addClass('laser-toolbar-actions');
+            const actionsRow = this.toolbar.createDiv('laser-toolbar-actions');
 
             if (this.settings.showEraserButton) {
-                this.eraserBtn = document.createElement('button');
-                this.eraserBtn.addClass('laser-action-btn');
-                this.eraserBtn.setAttribute('aria-label', 'Eraser');
-                this.eraserBtn.setText('🧽');
+                this.eraserBtn = actionsRow.createEl('button', {
+                    cls: 'laser-action-btn',
+                    attr: { 'aria-label': 'Eraser' },
+                    text: '🧽'
+                });
                 this.eraserBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.toggleEraserMode();
                 });
-                actionsRow.appendChild(this.eraserBtn);
             }
 
             if (this.settings.showClearButton) {
-                const clearBtn = document.createElement('button');
-                clearBtn.addClass('laser-action-btn');
-                clearBtn.setAttribute('aria-label', 'Clear all trails');
-                clearBtn.setText('🗑️');
+                const clearBtn = actionsRow.createEl('button', {
+                    cls: 'laser-action-btn',
+                    attr: { 'aria-label': 'Clear all trails' },
+                    text: '🗑️'
+                });
                 clearBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.clearAllPaths();
                 });
-                actionsRow.appendChild(clearBtn);
             }
-
-            this.toolbar.appendChild(actionsRow);
         }
 
         if (this.settings.showPersistToggle) {
-            const persistRow = document.createElement('div');
-            persistRow.addClass('laser-toolbar-persist');
+            const persistRow = this.toolbar.createDiv('laser-toolbar-persist');
 
-            const persistCheck = document.createElement('input');
-            persistCheck.type = 'checkbox';
-            persistCheck.id = 'laser-persist-toggle';
+            const persistCheck = persistRow.createEl('input', {
+                type: 'checkbox',
+                attr: { id: 'laser-persist-toggle' }
+            });
             persistCheck.checked = this.settings.persistTrails;
 
-            const persistLabel = document.createElement('label');
-            persistLabel.setAttribute('for', 'laser-persist-toggle');
-            persistLabel.setText('Persist');
+            persistRow.createEl('label', {
+                text: 'Persist',
+                attr: { for: 'laser-persist-toggle' }
+            });
 
             persistCheck.addEventListener('change', (e) => {
                 const checked = (e.target as HTMLInputElement).checked;
                 this.settings.persistTrails = checked;
-                this.saveSettings();
+                void this.saveSettings();
             });
-
-            persistRow.appendChild(persistCheck);
-            persistRow.appendChild(persistLabel);
-            this.toolbar.appendChild(persistRow);
         }
 
         if (this.settings.showRememberToggle) {
-            const rememberRow = document.createElement('div');
-            rememberRow.addClass('laser-toolbar-remember');
+            const rememberRow = this.toolbar.createDiv('laser-toolbar-remember');
 
-            const rememberCheck = document.createElement('input');
-            rememberCheck.type = 'checkbox';
-            rememberCheck.id = 'laser-remember-toggle';
+            const rememberCheck = rememberRow.createEl('input', {
+                type: 'checkbox',
+                attr: { id: 'laser-remember-toggle' }
+            });
             rememberCheck.checked = this.settings.rememberDrawings;
 
-            const rememberLabel = document.createElement('label');
-            rememberLabel.setAttribute('for', 'laser-remember-toggle');
-            rememberLabel.setText('Remember');
+            rememberRow.createEl('label', {
+                text: 'Remember',
+                attr: { for: 'laser-remember-toggle' }
+            });
 
             rememberCheck.addEventListener('change', (e) => {
                 const checked = (e.target as HTMLInputElement).checked;
                 this.settings.rememberDrawings = checked;
-                this.saveSettings();
+                void this.saveSettings();
                 if (!checked) {
                     this.savedPaths = [];
-                    this.saveData({ ...this.settings, _savedPaths: [] });
+                    void this.saveData({ ...this.settings, _savedPaths: [] });
                 }
             });
-
-            rememberRow.appendChild(rememberCheck);
-            rememberRow.appendChild(rememberLabel);
-            this.toolbar.appendChild(rememberRow);
         }
-
-        document.body.appendChild(this.toolbar);
     }
 
     toggleEraserMode() {
@@ -531,7 +500,7 @@ export default class LaserPointerPlugin extends Plugin {
 
     setLaserColor(color: string) {
         this.settings.laserColor = color;
-        this.saveSettings();
+        void this.saveSettings();
         this.applyLaserColor(color);
     }
 
@@ -555,15 +524,13 @@ export default class LaserPointerPlugin extends Plugin {
         this.isDrawing = true;
         this.points = [`${evt.clientX},${evt.clientY}`];
 
-        this.currentPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        this.currentPath.addClass('laser-path');
+        this.currentPath = this.svgContainer.createSvg('path', { cls: 'laser-path' });
         const c = this.settings.laserColor;
         this.currentPath.style.stroke = c;
         this.currentPath.style.strokeWidth = `${this.settings.strokeWidth}px`;
         this.currentPath.style.strokeOpacity = String(this.settings.strokeHardness);
         this.currentPath.style.filter = `drop-shadow(0 0 3px ${c}) drop-shadow(0 0 6px ${c})`;
         this.currentPath.setAttribute('d', `M ${this.points[0]}`);
-        this.svgContainer.appendChild(this.currentPath);
     }
 
     onMouseUp(evt: MouseEvent) {
@@ -586,9 +553,9 @@ export default class LaserPointerPlugin extends Plugin {
 
         const pathToFade = this.currentPath;
         const delay = this.settings.trailDuration * 1000;
-        setTimeout(() => {
+        window.setTimeout(() => {
             pathToFade.addClass('fading');
-            setTimeout(() => {
+            window.setTimeout(() => {
                 if (pathToFade.parentNode) {
                     pathToFade.remove();
                 }
@@ -616,7 +583,7 @@ export default class LaserPointerPlugin extends Plugin {
 class LaserPointerSettingTab extends PluginSettingTab {
     plugin: LaserPointerPlugin;
 
-    constructor(app: any, plugin: LaserPointerPlugin) {
+    constructor(app: App, plugin: LaserPointerPlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }
@@ -641,7 +608,6 @@ class LaserPointerSettingTab extends PluginSettingTab {
             .addSlider(slider => slider
                 .setLimits(0.5, 20, 0.5)
                 .setValue(this.plugin.settings.strokeWidth)
-                .setDynamicTooltip()
                 .onChange(async (value) => {
                     this.plugin.settings.strokeWidth = value;
                     await this.plugin.saveSettings();
@@ -653,7 +619,6 @@ class LaserPointerSettingTab extends PluginSettingTab {
             .addSlider(slider => slider
                 .setLimits(0.1, 1, 0.1)
                 .setValue(this.plugin.settings.strokeHardness)
-                .setDynamicTooltip()
                 .onChange(async (value) => {
                     this.plugin.settings.strokeHardness = value;
                     await this.plugin.saveSettings();
@@ -665,7 +630,6 @@ class LaserPointerSettingTab extends PluginSettingTab {
             .addSlider(slider => slider
                 .setLimits(1, 10, 0.5)
                 .setValue(this.plugin.settings.trailDuration)
-                .setDynamicTooltip()
                 .onChange(async (value) => {
                     this.plugin.settings.trailDuration = value;
                     await this.plugin.saveSettings();
@@ -710,7 +674,7 @@ class LaserPointerSettingTab extends PluginSettingTab {
             .setDesc('Choose which controls appear on the floating toolbar. Disabling items makes the toolbar smaller and more minimal.')
             .setHeading();
 
-        const visibilityItems: { key: keyof LaserPointerSettings; name: string }[] = [
+        const visibilityItems: { key: BooleanSettingKey; name: string }[] = [
             { key: 'showToolbarHeader', name: 'Header (drag handle)' },
             { key: 'showColorPresets', name: 'Color preset dots' },
             { key: 'showCustomColor', name: 'Custom color picker (🎨)' },
@@ -726,9 +690,9 @@ class LaserPointerSettingTab extends PluginSettingTab {
             new Setting(containerEl)
                 .setName(item.name)
                 .addToggle(toggle => toggle
-                    .setValue(this.plugin.settings[item.key] as boolean)
+                    .setValue(this.plugin.settings[item.key])
                     .onChange(async (value) => {
-                        (this.plugin.settings as any)[item.key] = value;
+                        this.plugin.settings[item.key] = value;
                         await this.plugin.saveSettings();
                     }));
         }
