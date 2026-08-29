@@ -278,13 +278,12 @@ export default class LaserPointerPlugin extends Plugin {
                 if (!this.toolbar) return;
                 this.isDraggingToolbar = true;
                 if (this.laserPointer) {
-                    this.laserPointer.style.display = 'none';
+                    this.laserPointer.addClass('laser-pointer-hidden');
                 }
                 const rect = this.toolbar.getBoundingClientRect();
                 this.toolbar.style.left = `${rect.left}px`;
                 this.toolbar.style.top = `${rect.top}px`;
-                this.toolbar.style.bottom = 'auto';
-                this.toolbar.style.transform = 'none';
+                this.toolbar.addClass('laser-toolbar-dragging');
                 this.dragOffsetX = evt.clientX - rect.left;
                 this.dragOffsetY = evt.clientY - rect.top;
                 evt.preventDefault();
@@ -491,7 +490,7 @@ export default class LaserPointerPlugin extends Plugin {
 
         if (this.isEraserMode) {
             if (this.svgContainer) {
-                this.svgContainer.style.pointerEvents = 'auto';
+                this.svgContainer.addClass('laser-svg-interactive');
             }
             if (this.laserPointer) {
                 this.laserPointer.addClass('eraser-mode');
@@ -502,7 +501,7 @@ export default class LaserPointerPlugin extends Plugin {
             new Notice('🧽 Eraser mode ON — click a trail to delete it');
         } else {
             if (this.svgContainer) {
-                this.svgContainer.style.pointerEvents = 'none';
+                this.svgContainer.removeClass('laser-svg-interactive');
             }
             if (this.laserPointer) {
                 this.laserPointer.removeClass('eraser-mode');
@@ -571,7 +570,7 @@ export default class LaserPointerPlugin extends Plugin {
         if (this.isDraggingToolbar) {
             this.isDraggingToolbar = false;
             if (this.laserPointer) {
-                this.laserPointer.style.display = '';
+                this.laserPointer.removeClass('laser-pointer-hidden');
             }
             return;
         }
@@ -626,7 +625,9 @@ class LaserPointerSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
-        containerEl.createEl('h2', { text: 'Laser Pointer Settings' });
+        new Setting(containerEl)
+            .setName('Laser Pointer Settings')
+            .setHeading();
 
         new Setting(containerEl)
             .setName('Laser color')
@@ -708,8 +709,10 @@ class LaserPointerSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
-        containerEl.createEl('h3', { text: 'Toolbar visibility' });
-        containerEl.createEl('p', { text: 'Choose which controls appear on the floating toolbar. Disabling items makes the toolbar smaller and more minimal.', cls: 'setting-item-description' });
+        new Setting(containerEl)
+            .setName('Toolbar visibility')
+            .setDesc('Choose which controls appear on the floating toolbar. Disabling items makes the toolbar smaller and more minimal.')
+            .setHeading();
 
         const visibilityItems: { key: keyof LaserPointerSettings; name: string }[] = [
             { key: 'showToolbarHeader', name: 'Header (drag handle)' },

@@ -1,8 +1,8 @@
 # 🔴 Laser Pointer
 
 **Author:** Alessandro Vettorel  
-**Version:** 1.0.0  
-**For:** Obsidian (min. v0.15.0)
+**Version:** 1.0.1  
+**For:** Obsidian (min. v0.16.0)
 
 ---
 
