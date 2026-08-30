@@ -2,7 +2,7 @@
 
 **Author:** Alessandro Vettorel  
 **Version:** 1.0.1  
-**For:** Obsidian (min. v0.16.0)
+**For:** Obsidian (min. v1.0.0)
 
 ---
 
@@ -22,6 +22,12 @@ When you are on a call, recording a tutorial, or showing your vault to someone, 
 - **Save and resume** your drawings across laser sessions
 
 It is your virtual laser pointer, right inside Obsidian.
+
+---
+
+## 🎬 Demo
+
+![Laser Pointer Demo](Demo_laser_pointer.gif)
 
 ---
 
