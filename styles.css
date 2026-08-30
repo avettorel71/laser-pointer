@@ -1,3 +1,7 @@
+/* !important is intentional here: these rules must override cursor
+   styles set by Obsidian core and third-party themes on arbitrary
+   elements (links, buttons, the editor, resize handles, etc.), whose
+   specificity we cannot predict or match with plain selectors. */
 .laser-cursor-hidden,
 .laser-cursor-hidden * {
     cursor: none !important;
@@ -29,9 +33,9 @@
 .laser-pointer.eraser-mode {
     width: 22px;
     height: 22px;
-    background-color: rgba(255, 255, 255, 0.25) !important;
+    background-color: rgba(255, 255, 255, 0.25);
     border: 3px solid #ffffff;
-    box-shadow: 0 0 0 2px #000000, 0 0 12px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 0 0 2px #000000, 0 0 12px rgba(0, 0, 0, 0.6);
 }
 
 .laser-svg-container {
@@ -275,19 +279,19 @@
 }
 
 /* Laser pointer hidden (usato durante drag toolbar) */
-.laser-pointer-hidden {
-    display: none !important;
+.laser-pointer.laser-pointer-hidden {
+    display: none;
 }
 
 /* Toolbar dragging state */
-.laser-toolbar-dragging {
-    bottom: auto !important;
-    transform: none !important;
+.laser-toolbar.laser-toolbar-dragging {
+    bottom: auto;
+    transform: none;
 }
 
 /* SVG interactive (eraser mode) */
-.laser-svg-interactive {
-    pointer-events: auto !important;
+.laser-svg-container.laser-svg-interactive {
+    pointer-events: auto;
 }
 
 /* Settings heading styles */

@@ -1,4 +1,4 @@
-import { App, Plugin, Notice, PluginSettingTab, Setting, MarkdownView, WorkspaceLeaf } from 'obsidian';
+import { App, Plugin, Notice, PluginSettingTab, Setting, MarkdownView, WorkspaceLeaf, SettingDefinitionItem } from 'obsidian';
 
 interface LaserPointerSettings {
     laserColor: string;
@@ -588,6 +588,93 @@ class LaserPointerSettingTab extends PluginSettingTab {
         this.plugin = plugin;
     }
 
+    /**
+     * Declarative settings, used by Obsidian 1.13.0+ for the settings
+     * search index and for rendering. On older versions this method is
+     * simply ignored and display() below is used instead.
+     */
+    getSettingDefinitions(): SettingDefinitionItem[] {
+        const visibilityItems: { key: BooleanSettingKey; name: string }[] = [
+            { key: 'showToolbarHeader', name: 'Header (drag handle)' },
+            { key: 'showColorPresets', name: 'Color preset dots' },
+            { key: 'showCustomColor', name: 'Custom color picker (🎨)' },
+            { key: 'showWidthSlider', name: 'Width slider' },
+            { key: 'showHardnessSlider', name: 'Hardness slider' },
+            { key: 'showEraserButton', name: 'Eraser button (🧽)' },
+            { key: 'showClearButton', name: 'Clear-all button (🗑️)' },
+            { key: 'showPersistToggle', name: 'Persist trails toggle' },
+            { key: 'showRememberToggle', name: 'Remember drawings toggle' },
+        ];
+
+        return [
+            {
+                name: 'Laser color',
+                desc: 'Choose the color of the pointer and the drawn trails.',
+                control: { type: 'color', key: 'laserColor', defaultValue: DEFAULT_SETTINGS.laserColor },
+            },
+            {
+                name: 'Trail width (px)',
+                desc: 'Set the thickness of the drawn trails.',
+                control: { type: 'slider', key: 'strokeWidth', min: 0.5, max: 20, step: 0.5, defaultValue: DEFAULT_SETTINGS.strokeWidth },
+            },
+            {
+                name: 'Stroke hardness',
+                desc: 'How opaque the trail is. Low = faint and semi-transparent, High = solid and bold.',
+                control: { type: 'slider', key: 'strokeHardness', min: 0.1, max: 1, step: 0.1, defaultValue: DEFAULT_SETTINGS.strokeHardness },
+            },
+            {
+                name: 'Trail duration (seconds)',
+                desc: 'How many seconds the trail stays visible before fading away.',
+                control: { type: 'slider', key: 'trailDuration', min: 1, max: 10, step: 0.5, defaultValue: DEFAULT_SETTINGS.trailDuration },
+            },
+            {
+                name: 'Persist trails',
+                desc: 'When enabled, drawn trails remain visible until you exit laser mode instead of fading automatically.',
+                control: { type: 'toggle', key: 'persistTrails', defaultValue: DEFAULT_SETTINGS.persistTrails },
+            },
+            {
+                name: 'Remember drawings',
+                desc: 'When enabled, all drawn trails are saved when you exit laser mode and restored when you re-enter.',
+                control: { type: 'toggle', key: 'rememberDrawings', defaultValue: DEFAULT_SETTINGS.rememberDrawings },
+            },
+            {
+                name: 'Auto reading mode',
+                desc: 'Automatically switch the active note to reading mode when the laser is activated, and restore the original mode when deactivated.',
+                control: { type: 'toggle', key: 'autoReadingMode', defaultValue: DEFAULT_SETTINGS.autoReadingMode },
+            },
+            {
+                type: 'group',
+                heading: 'Toolbar visibility',
+                items: visibilityItems.map(item => ({
+                    name: item.name,
+                    control: { type: 'toggle' as const, key: item.key, defaultValue: DEFAULT_SETTINGS[item.key] },
+                })),
+            },
+        ];
+    }
+
+    getControlValue(key: string): unknown {
+        return this.plugin.settings[key as keyof LaserPointerSettings];
+    }
+
+    async setControlValue(key: string, value: unknown): Promise<void> {
+        const settingKey = key as keyof LaserPointerSettings;
+        this.assignSetting(settingKey, value);
+        await this.plugin.saveSettings();
+        if (settingKey === 'rememberDrawings' && value === false) {
+            this.plugin.savedPaths = [];
+            await this.plugin.saveData({ ...this.plugin.settings, _savedPaths: [] });
+        }
+    }
+
+    private assignSetting<K extends keyof LaserPointerSettings>(key: K, value: unknown): void {
+        this.plugin.settings[key] = value as LaserPointerSettings[K];
+    }
+
+    /**
+     * Imperative fallback, only used by Obsidian versions older than
+     * 1.13.0 (getSettingDefinitions() takes over on newer versions).
+     */
     display(): void {
         const { containerEl } = this;
         containerEl.empty();
