@@ -1,21 +1,20 @@
-/* !important is intentional here: these rules must override cursor
-   styles set by Obsidian core and third-party themes on arbitrary
-   elements (links, buttons, the editor, resize handles, etc.), whose
-   specificity we cannot predict or match with plain selectors. */
-.laser-cursor-hidden,
-.laser-cursor-hidden * {
-    cursor: none !important;
+/* Selectors are doubled (.laser-cursor-hidden.laser-cursor-hidden) as a
+   specificity boost so these rules reliably win the cascade against
+   Obsidian core and theme cursor styles, without needing !important. */
+.laser-cursor-hidden.laser-cursor-hidden,
+.laser-cursor-hidden.laser-cursor-hidden * {
+    cursor: none;
 }
 
-.laser-toolbar,
-.laser-toolbar * {
-    cursor: default !important;
+.laser-toolbar.laser-toolbar,
+.laser-toolbar.laser-toolbar * {
+    cursor: default;
 }
 
-.laser-color-btn,
-.laser-width-slider,
-.laser-action-btn {
-    cursor: pointer !important;
+.laser-color-btn.laser-color-btn,
+.laser-width-slider.laser-width-slider,
+.laser-action-btn.laser-action-btn {
+    cursor: pointer;
 }
 
 .laser-pointer {
