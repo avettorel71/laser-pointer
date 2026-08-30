@@ -2,7 +2,7 @@
   "id": "laser-pointer",
   "name": "Laser Pointer",
   "version": "1.0.1",
-  "minAppVersion": "0.16.0",
+  "minAppVersion": "1.0.0",
   "description": "A glowing laser pointer that follows your cursor and draws trails that fade away after a set duration.",
   "author": "Alessandro Vettorel",
   "isDesktopOnly": false
