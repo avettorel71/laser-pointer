@@ -345,7 +345,7 @@ export default class LaserPointerPlugin extends Plugin {
             const slider = widthRow.createEl('input', {
                 type: 'range',
                 cls: 'laser-width-slider',
-                attr: { min: '0.5', max: '20', step: '0.5' }
+                attr: { min: '0.5', max: '40', step: '0.5' }
             });
             slider.value = String(this.settings.strokeWidth);
 
@@ -615,7 +615,7 @@ class LaserPointerSettingTab extends PluginSettingTab {
             {
                 name: 'Trail width (px)',
                 desc: 'Set the thickness of the drawn trails.',
-                control: { type: 'slider', key: 'strokeWidth', min: 0.5, max: 20, step: 0.5, defaultValue: DEFAULT_SETTINGS.strokeWidth },
+                control: { type: 'slider', key: 'strokeWidth', min: 0.5, max: 40, step: 0.5, defaultValue: DEFAULT_SETTINGS.strokeWidth },
             },
             {
                 name: 'Stroke hardness',
@@ -693,7 +693,7 @@ class LaserPointerSettingTab extends PluginSettingTab {
             .setName('Trail width (px)')
             .setDesc('Set the thickness of the drawn trails.')
             .addSlider(slider => slider
-                .setLimits(0.5, 20, 0.5)
+                .setLimits(0.5, 40, 0.5)
                 .setValue(this.plugin.settings.strokeWidth)
                 .onChange(async (value) => {
                     this.plugin.settings.strokeWidth = value;

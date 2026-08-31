@@ -2,7 +2,7 @@
 
 **Author:** Alessandro Vettorel  
 **Version:** 1.0.1  
-**For:** Obsidian (min. v1.0.0)
+**For:** Obsidian (min. v0.16.0)
 
 ---
 
@@ -78,7 +78,7 @@ Switch colors instantly from the toolbar. Available presets:
 Click the **🎨** button on the toolbar to open the browser's native color picker and choose any color you want.
 
 ### 11. Adjustable trail width
-Move the **Width slider** on the toolbar to change the stroke thickness on the fly — from an ultra-thin hairline (0.5 px) up to a bold, heavy stroke (20 px).
+Move the **Width slider** on the toolbar to change the stroke thickness on the fly — from an ultra-thin hairline (0.5 px) up to a bold, heavy stroke (40 px).
 
 ### 12. Stroke hardness (opacity)
 Move the **Hardness slider** to control how opaque or transparent the trail is:
@@ -94,7 +94,7 @@ Click the **🗑️** button to delete **all** drawn trails instantly — both p
 ### 15. Full settings panel
 Go to **Settings → Community Plugins → Laser Pointer** to set your defaults:
 - **Laser color** — default color of the pointer and trails
-- **Trail width (px)** — default stroke thickness (0.5 to 20 px)
+- **Trail width (px)** — default stroke thickness (0.5 to 40 px)
 - **Stroke hardness** — opacity of the trail (10% to 100%)
 - **Trail duration (seconds)** — how long trails stay visible before fading (1 to 10 seconds)
 - **Persist trails** — when on, trails remain until laser mode is exited
