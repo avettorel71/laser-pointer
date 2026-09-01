@@ -1,7 +1,7 @@
 # 🔴 Laser Pointer
 
 **Author:** Alessandro Vettorel  
-**Version:** 1.0.1  
+**Version:** 1.0.2  
 **For:** Obsidian (min. v0.16.0)
 
 ---
@@ -70,9 +70,11 @@ When the laser is on, a **compact horizontal toolbar** appears at the bottom cen
 
 You can also **customize which controls appear** on the toolbar from Settings, making it as minimal or as complete as you like.
 
-### 9. 11 preset colors
-Switch colors instantly from the toolbar. Available presets:
+### 9. Customizable preset colors
+Switch colors instantly from the toolbar. Out of the box it ships with 11 presets:
 🔴 Red · 🟠 Orange · 🟡 Yellow · 🟢 Green · 🔵 Blue · 🟣 Purple · 🩷 Pink · 🟤 Brown · ⚪ Gray · ⚫ Black · ⬜ White
+
+These are just the defaults — go to **Settings → Preset colors** to add, remove, or recolor entries. The toolbar always shows exactly the colors listed there: keep only 4 if that's all you need, or add as many as you like. A **Reset to default colors** button brings back the original 11 at any time.
 
 ### 10. Custom color picker
 Click the **🎨** button on the toolbar to open the browser's native color picker and choose any color you want.
@@ -85,21 +87,32 @@ Move the **Hardness slider** to control how opaque or transparent the trail is:
 - **Low** → faint, semi-transparent line (delicate highlights)
 - **High** → solid, bold stroke (strong markers)
 
-### 13. Eraser mode
-Click the **🧽** button to enter eraser mode. The pointer changes to a ring cursor. Click on any existing trail to delete it individually. Click 🧽 again to return to drawing mode.
+### 13. Rectangle tool
+Click the **▭** button on the toolbar to switch from freehand trails to a **draggable rectangle**: click and drag anywhere to draw a rectangle from corner to corner. It follows the same color, width, hardness, and persist/fade behavior as regular trails. Click **▭** again (or enter eraser mode) to go back to freehand drawing.
 
-### 14. Clear All
-Click the **🗑️** button to delete **all** drawn trails instantly — both persistent and saved ones.
+### 14. Straight line tool
+Click the **╱** button on the toolbar to switch to the **straight line** tool: click and drag to draw a perfectly straight segment from the starting point to wherever you release the mouse. It follows the same color, width, hardness, and persist/fade behavior as regular trails. Click **╱** again (or enter eraser mode) to go back to freehand drawing. Like the rectangle tool, it's mutually exclusive with the rectangle tool — turning one on turns the other off.
 
-### 15. Full settings panel
+### 15. Filled or outline rectangles
+The **⬜ / 🔳** button sits right next to the rectangle tool button and only appears on the toolbar while the **rectangle tool is active**. It switches new rectangles between **filled** and **outline-only**, can be flipped at any time, and the current choice is also saved as the default in Settings. Like every other control, it can be hidden from the toolbar via **Toolbar visibility** in Settings (it also requires the rectangle tool button itself to be enabled there).
+
+### 16. Eraser mode
+Click the **🧽** button to enter eraser mode. The pointer changes to a ring cursor. Click on any existing trail, rectangle, or line to delete it individually. Click 🧽 again to return to drawing mode.
+
+### 17. Clear All
+Click the **🗑️** button to delete **all** drawn trails, rectangles, and lines instantly — both persistent and saved ones.
+
+### 18. Full settings panel
 Go to **Settings → Community Plugins → Laser Pointer** to set your defaults:
 - **Laser color** — default color of the pointer and trails
 - **Trail width (px)** — default stroke thickness (0.5 to 40 px)
-- **Stroke hardness** — opacity of the trail (10% to 100%)
+- **Stroke hardness** — opacity of the trail (5% to 100%, in 5% steps)
 - **Trail duration (seconds)** — how long trails stay visible before fading (1 to 10 seconds)
 - **Persist trails** — when on, trails remain until laser mode is exited
-- **Remember drawings** — when on, trails are saved and restored across sessions
+- **Remember drawings** — when on, trails, rectangles, and lines are saved and restored across sessions
 - **Auto reading mode** — automatically switch to reading mode when laser is on
+- **Rectangles filled by default** — whether the rectangle tool starts filled or outline-only
+- **Preset colors** — add, remove, or recolor the dots shown on the toolbar; starts out matching the 11 built-in colors, with a button to reset back to them
 - **Toolbar visibility** — choose exactly which controls appear on the floating toolbar
 
 All settings are saved automatically.
@@ -145,6 +158,9 @@ Download the latest release from the GitHub releases page and extract the three 
 | Click **🎨** on the toolbar | Open the full color picker |
 | Move the **Width slider** on the toolbar | Adjust trail thickness live |
 | Move the **Hardness slider** on the toolbar | Adjust trail opacity live |
+| Click **▭** on the toolbar | Switch between freehand trails and the draggable rectangle tool |
+| Click **╱** on the toolbar | Switch between freehand trails and the straight line tool |
+| Click **⬜ / 🔳** on the toolbar | Switch new rectangles between outline-only and filled |
 | Check **"Persist"** on the toolbar | Trails stay until you exit laser mode |
 | Check **"Remember"** on the toolbar | Trails are saved and restored across sessions |
 | Click **🧽** on the toolbar | Enter eraser mode — click trails to delete them |
@@ -176,6 +192,27 @@ Download the latest release from the GitHub releases page and extract the three 
 - Remember drawings saves trail geometry, color, width, opacity, and glow data to disk and restores it on re-entry
 - The eraser mode temporarily enables `pointer-events: auto` on the SVG overlay to allow trail selection
 - Auto reading mode saves the original view state (source/preview) and restores it on deactivation
+
+---
+
+## 📋 Changelog
+
+### 1.0.2
+- **Customizable preset colors** — add, remove, or recolor the dots shown on the toolbar from Settings; starts out matching the built-in colors, with a button to reset back to them
+- **Rectangle tool** with a filled/outline toggle
+- **Straight line tool**
+- **Lower stroke hardness floor** — the hardness slider now goes down to 5% in 5% steps (previously 10% in 10% steps)
+
+### 1.0.1
+- **Preset colors** — 11 fixed color dots on the toolbar
+- **Persist trails** — trails can stay on screen until laser mode is exited instead of always fading
+- **Remember drawings** — trails, rectangles, and lines can be saved on exit and restored on re-entry
+
+### 1.0.0
+- Freehand trail drawing that fades after a set duration
+- Floating toolbar
+- Eraser mode
+- Clear All button
 
 ---
 

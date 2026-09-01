@@ -61,6 +61,29 @@
     stroke-width: 0;
 }
 
+.laser-rect {
+    stroke-width: 3px;
+    opacity: 1;
+    transition: opacity 1s ease-out, stroke-width 1s ease-out;
+}
+
+.laser-rect.fading {
+    opacity: 0;
+    stroke-width: 0;
+}
+
+.laser-line {
+    stroke-width: 3px;
+    stroke-linecap: round;
+    opacity: 1;
+    transition: opacity 1s ease-out, stroke-width 1s ease-out;
+}
+
+.laser-line.fading {
+    opacity: 0;
+    stroke-width: 0;
+}
+
 .laser-toolbar {
     position: fixed;
     bottom: 20px;
@@ -190,6 +213,22 @@
     flex-shrink: 0;
 }
 
+.laser-toolbar-shape {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    border-left: 1px solid var(--background-modifier-border);
+    padding-left: 8px;
+}
+
+.laser-toolbar-line {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    border-left: 1px solid var(--background-modifier-border);
+    padding-left: 8px;
+}
+
 .laser-toolbar-actions {
     display: flex;
     flex-direction: row;
@@ -223,6 +262,13 @@
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     border-color: var(--interactive-accent);
+}
+
+/* Used for toolbar controls that are conditionally shown, e.g. the
+   fill/outline toggle, which only appears while the rectangle tool
+   is the active drawing mode. */
+.laser-action-btn.laser-hidden {
+    display: none;
 }
 
 .laser-toolbar-persist {

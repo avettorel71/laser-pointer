@@ -1,6 +1,6 @@
 {
   "name": "obsidian-laser-pointer",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A glowing laser pointer for Obsidian that follows your cursor and draws fading trails.",
   "main": "main.js",
   "scripts": {
