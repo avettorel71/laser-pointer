@@ -980,9 +980,9 @@ class LaserPointerSettingTab extends PluginSettingTab {
     }
 
     /**
-     * Declarative settings, used by Obsidian 1.13.0+ for the settings
-     * search index and for rendering. On older versions this method is
-     * simply ignored and display() below is used instead.
+     * Declarative settings (Obsidian 1.13.0+, the plugin's minAppVersion).
+     * No display() fallback: this plugin only ever runs on Obsidian
+     * versions that render from getSettingDefinitions() directly.
      *
      * Preset colors use a 'list' definition (SettingDefinitionList): it's
      * built specifically for add/remove/reorder collections and renders
@@ -1114,26 +1114,18 @@ class LaserPointerSettingTab extends PluginSettingTab {
     /**
      * Refreshes the settings tab after a change that adds/removes a row
      * (the preset color list) rather than just editing a value in place.
-     * update() is declared unconditionally in obsidian.d.ts, but its own
-     * doc says "@since 1.13.0" — on an install older than that (this
-     * plugin's minAppVersion is 1.0.0) the method may not actually exist
-     * at runtime even though the type says it does, so it's still guarded
-     * with a typeof check rather than called unconditionally.
+     * Always safe to call unconditionally: minAppVersion is 1.13.0, so
+     * update() is guaranteed to exist.
      */
     private refresh(): void {
-        if (typeof this.update === 'function') {
-            this.update();
-        } else {
-            this.display();
-        }
+        this.update();
     }
 
     /**
-     * Color picker + label text field for one preset color. Shared by the
-     * declarative 'list' definition above (whose render() callback needs
-     * only this — the list itself supplies the delete button and "+" add
-     * affordance) and by renderPresetColorRow() below, which adds its own
-     * manual delete button for the imperative display() fallback.
+     * Color picker + label text field for one preset color, used by the
+     * declarative 'list' definition above — the list itself supplies the
+     * delete button and "+" add affordance, so this only needs to draw
+     * the two editable fields.
      */
     private applyPresetColorFields(setting: Setting, preset: PresetColor): void {
         setting
@@ -1152,180 +1144,4 @@ class LaserPointerSettingTab extends PluginSettingTab {
                 }));
     }
 
-    /**
-     * Renders one preset-color row for the imperative display() fallback:
-     * the shared color/label fields plus a manual remove button, since
-     * plain Setting rows there don't have the declarative list's built-in
-     * delete affordance.
-     */
-    private renderPresetColorRow(setting: Setting, preset: PresetColor, index: number): void {
-        this.applyPresetColorFields(setting, preset);
-        setting.addExtraButton(btn => btn
-            .setIcon('trash')
-            .setTooltip('Remove this color')
-            .onClick(async () => {
-                this.plugin.settings.presetColors.splice(index, 1);
-                await this.plugin.saveSettings();
-                this.refresh();
-            }));
-    }
-
-    /** "Add color" / "Reset to default colors" row, for the imperative display() fallback (the declarative list above uses its own addItem/extraButtons instead). */
-    private renderPresetColorActions(setting: Setting): void {
-        setting
-            .addButton(btn => btn
-                .setButtonText('Add color')
-                .onClick(async () => {
-                    this.plugin.settings.presetColors.push({ color: '#ffffff', label: 'New color' });
-                    await this.plugin.saveSettings();
-                    this.refresh();
-                }))
-            .addButton(btn => btn
-                .setButtonText('Reset to default colors')
-                .onClick(async () => {
-                    this.plugin.settings.presetColors = cloneDefaultPresetColors();
-                    await this.plugin.saveSettings();
-                    this.refresh();
-                }));
-    }
-
-    /**
-     * Imperative fallback, only used by Obsidian versions older than
-     * 1.13.0 (getSettingDefinitions() takes over on newer versions).
-     */
-    display(): void {
-        const { containerEl } = this;
-        containerEl.empty();
-
-        new Setting(containerEl)
-            .setName('Laser color')
-            .setDesc('Choose the color of the pointer and the drawn trails.')
-            .addColorPicker(color => color
-                .setValue(this.plugin.settings.laserColor)
-                .onChange(async (value) => {
-                    this.plugin.settings.laserColor = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        new Setting(containerEl)
-            .setName('Trail width (px)')
-            .setDesc('Set the thickness of the drawn trails.')
-            .addSlider(slider => slider
-                .setLimits(0.5, 40, 0.5)
-                .setValue(this.plugin.settings.strokeWidth)
-                .onChange(async (value) => {
-                    this.plugin.settings.strokeWidth = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        new Setting(containerEl)
-            .setName('Stroke hardness')
-            .setDesc('How opaque the trail is. Low = faint and semi-transparent, High = solid and bold.')
-            .addSlider(slider => slider
-                .setLimits(0.05, 1, 0.05)
-                .setValue(this.plugin.settings.strokeHardness)
-                .onChange(async (value) => {
-                    this.plugin.settings.strokeHardness = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        new Setting(containerEl)
-            .setName('Trail duration (seconds)')
-            .setDesc('How many seconds the trail stays visible before fading away.')
-            .addSlider(slider => slider
-                .setLimits(1, 10, 0.5)
-                .setValue(this.plugin.settings.trailDuration)
-                .onChange(async (value) => {
-                    this.plugin.settings.trailDuration = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        new Setting(containerEl)
-            .setName('Persist trails')
-            .setDesc('When enabled, drawn trails remain visible until you exit laser mode instead of fading automatically.')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.persistTrails)
-                .onChange(async (value) => {
-                    this.plugin.settings.persistTrails = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        new Setting(containerEl)
-            .setName('Remember drawings')
-            .setDesc('When enabled, all drawn trails are saved when you exit laser mode and restored when you re-enter.')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.rememberDrawings)
-                .onChange(async (value) => {
-                    this.plugin.settings.rememberDrawings = value;
-                    await this.plugin.saveSettings();
-                    if (!value) {
-                        this.plugin.savedPaths = [];
-                        this.plugin.savedRects = [];
-                        this.plugin.savedLines = [];
-                        await this.plugin.saveData({ ...this.plugin.settings, _savedPaths: [], _savedRects: [], _savedLines: [] });
-                    }
-                }));
-
-        new Setting(containerEl)
-            .setName('Auto reading mode')
-            .setDesc('Automatically switch the active note to reading mode when the laser is activated, and restore the original mode when deactivated.')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.autoReadingMode)
-                .onChange(async (value) => {
-                    this.plugin.settings.autoReadingMode = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        new Setting(containerEl)
-            .setName('Rectangles filled by default')
-            .setDesc('When enabled, the rectangle tool draws solid filled rectangles. When disabled, it draws outline-only rectangles. This can also be toggled from the toolbar at any time.')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.rectangleFilled)
-                .onChange(async (value) => {
-                    this.plugin.settings.rectangleFilled = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        new Setting(containerEl)
-            .setName('Preset colors')
-            .setDesc('The color dots shown on the floating toolbar. Starts out matching the built-in colors below — edit, remove, or add your own; only the colors listed here appear on the toolbar.')
-            .setHeading();
-
-        this.plugin.settings.presetColors.forEach((preset, index) => {
-            this.renderPresetColorRow(new Setting(containerEl), preset, index);
-        });
-
-        this.renderPresetColorActions(new Setting(containerEl));
-
-        new Setting(containerEl)
-            .setName('Toolbar visibility')
-            .setDesc('Choose which controls appear on the floating toolbar. Disabling items makes the toolbar smaller and more minimal.')
-            .setHeading();
-
-        const visibilityItems: { key: BooleanSettingKey; name: string }[] = [
-            { key: 'showToolbarHeader', name: 'Header (drag handle)' },
-            { key: 'showColorPresets', name: 'Color preset dots' },
-            { key: 'showCustomColor', name: 'Custom color picker (🎨)' },
-            { key: 'showWidthSlider', name: 'Width slider' },
-            { key: 'showHardnessSlider', name: 'Hardness slider' },
-            { key: 'showEraserButton', name: 'Eraser button (🧽)' },
-            { key: 'showClearButton', name: 'Clear-all button (🗑️)' },
-            { key: 'showPersistToggle', name: 'Persist trails toggle' },
-            { key: 'showRememberToggle', name: 'Remember drawings toggle' },
-            { key: 'showShapeToggle', name: 'Rectangle tool button (▭)' },
-            { key: 'showFillToggle', name: 'Fill/outline toggle (⬜/🔳) — next to the rectangle button, shown only while it is active' },
-            { key: 'showLineToggle', name: 'Straight line tool button (╱)' },
-        ];
-
-        for (const item of visibilityItems) {
-            new Setting(containerEl)
-                .setName(item.name)
-                .addToggle(toggle => toggle
-                    .setValue(this.plugin.settings[item.key])
-                    .onChange(async (value) => {
-                        this.plugin.settings[item.key] = value;
-                        await this.plugin.saveSettings();
-                    }));
-        }
-    }
 }

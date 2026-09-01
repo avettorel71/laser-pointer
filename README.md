@@ -2,7 +2,7 @@
 
 **Author:** Alessandro Vettorel  
 **Version:** 1.0.2  
-**For:** Obsidian (min. v0.16.0)
+**For:** Obsidian (min. v1.13.0)
 
 ---
 
@@ -202,6 +202,7 @@ Download the latest release from the GitHub releases page and extract the three 
 - **Rectangle tool** with a filled/outline toggle
 - **Straight line tool**
 - **Lower stroke hardness floor** — the hardness slider now goes down to 5% in 5% steps (previously 10% in 10% steps)
+- **Minimum Obsidian version raised to 1.13.0** (from 1.0.0), required by the declarative settings list used for the new preset color editor
 
 ### 1.0.1
 - **Preset colors** — 11 fixed color dots on the toolbar
